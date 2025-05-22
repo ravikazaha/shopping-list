@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shopping_list/data/dummy_items.dart';
+import 'package:shopping_list/models/grocery_items.dart';
 import 'package:shopping_list/widgets/grocery_lists.dart';
-import 'package:shopping_list/models/grocery.dart';
 import 'package:shopping_list/widgets/new_item.dart';
 
 final theme = ThemeData.dark().copyWith(
-  useMaterial3: true,
   colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 147, 229, 250),brightness: Brightness.dark, surface: const Color.fromARGB(255, 42, 51, 59)), scaffoldBackgroundColor: const Color.fromARGB(255, 50, 58, 60)
 );
 
@@ -13,14 +13,8 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final List<Grocery> groceries;
 
-  MyApp({super.key})
-    : groceries = [
-        Grocery(1,"Milk", 1, Colors.blue),
-        Grocery(2,"Bananas", 5, Colors.green),
-        Grocery(3,"Beef Steak", 1, Colors.orange),
-      ];
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -28,25 +22,49 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Shopping List',
       theme: theme,
-      home: MyHomePage(groceries: groceries),
+      home: MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  final List<Grocery> groceries;
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
 
-  const MyHomePage({required this.groceries, super.key});
+  @override
+  State<MyHomePage> createState() {
+    return _MyHomePage();
+  }
+}
 
-  _newItemHandler(BuildContext context) {
-    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => NewItem()));
+class _MyHomePage extends State<MyHomePage> {
+
+  final List<GroceryItem> _groceryItems = groceryItems;
+
+  _newItemHandler(BuildContext context) async {
+    final newItem = await Navigator.of(context).push<GroceryItem>(MaterialPageRoute(builder: (ctx) => NewItem()));
+    if (newItem == null) {
+      return;
+    }
+
+    setState(() {
+      _groceryItems.add(newItem);
+    });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Grocery item added!")));
+  }
+
+  void _removeItemHandler(GroceryItem groceryItem) {
+    _groceryItems.remove(groceryItem);
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Grocery item deleted!")));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Your Groceries")),
-      body: GroceryLists(groceries: groceries,),
+      body: GroceryLists(groceries: _groceryItems, onRemoveItem: _removeItemHandler,),
       floatingActionButton: FloatingActionButton(onPressed: () {
         _newItemHandler(context);
       }, child: Icon(Icons.add),),
