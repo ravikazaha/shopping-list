@@ -3,12 +3,17 @@ import 'package:shopping_list/models/grocery_items.dart';
 
 class GroceryLists extends StatelessWidget {
   final List<GroceryItem> groceries;
+  final bool isLoading;
   final void Function(GroceryItem goceryItem) onRemoveItem;
 
-  const GroceryLists({super.key, required this.groceries, required this.onRemoveItem});
+  const GroceryLists({super.key, required this.groceries, required this.onRemoveItem, required this.isLoading});
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator(),);
+    }
+
     if (groceries.isEmpty) {
       return Center(child: Text("No Grocery Items founds"),);
     }
